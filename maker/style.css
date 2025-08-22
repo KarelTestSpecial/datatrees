@@ -65,6 +65,18 @@ body {
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 
+.accordion-item.dragging {
+    opacity: 0.5;
+}
+
+.drag-over {
+    border-top: 2px solid #007bff; /* Indicator for dropping between nodes */
+}
+
+.drop-as-child {
+    background-color: #d4edda; /* Greenish background to indicate dropping as a child */
+}
+
 .accordion-title {
     background-color: #f4f4f4;
     padding: 10px;
@@ -76,6 +88,13 @@ body {
 
 .title-text {
     flex-grow: 1; /* Allow the title to take up remaining space */
+    cursor: pointer;
+    color: #0056b3;
+    text-decoration: none;
+}
+
+.title-text:hover {
+    text-decoration: underline;
 }
 
 .accordion-content {

@@ -48,19 +48,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function render() {
         accordionContainer.innerHTML = '';
         state.nodes.forEach(node => {
-            accordionContainer.appendChild(createNodeElement(node));
+            accordionContainer.appendChild(createNodeElement(node, []));
         });
         updateActionButtons();
     }
 
-    function createNodeElement(node) {
+    function createNodeElement(node, breadcrumb) {
         const isSelected = node.id === state.selectedNodeId;
         const isAccordionOpen = state.openNodes.has(node.id);
         const isContentVisible = node.contentVisible === true;
+        const currentBreadcrumb = [...breadcrumb, node.title];
 
         const item = document.createElement('div');
         item.className = `accordion-item ${isSelected ? 'selected' : ''}`;
         item.dataset.id = node.id;
+        item.draggable = true;
 
         // --- Build Title Div ---
         const titleDiv = document.createElement('div');
@@ -74,6 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const titleText = document.createElement('span');
         titleText.className = 'title-text';
         titleText.textContent = node.title;
+        titleText.dataset.breadcrumb = JSON.stringify(currentBreadcrumb);
+
 
         const accordionToggleBtn = document.createElement('span');
         accordionToggleBtn.className = 'accordion-toggle-btn';
@@ -102,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (node.children && node.children.length > 0) {
             node.children.forEach(childNode => {
-                nestedContainer.appendChild(createNodeElement(childNode));
+                nestedContainer.appendChild(createNodeElement(childNode, currentBreadcrumb));
             });
         }
 
@@ -192,6 +196,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (node.children) node.children = deleteNodeRecursive(node.children, id);
             return true;
         });
+    }
+
+    function findNodeAndParent(nodes, id, parent = null) {
+        for (const node of nodes) {
+            if (node.id === id) {
+                return { node, parent };
+            }
+            if (node.children) {
+                const found = findNodeAndParent(node.children, id, node);
+                if (found) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     function nodesToTxt(nodes, level = 0) {
@@ -366,13 +385,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!itemElement) return;
 
         const id = parseInt(itemElement.dataset.id, 10);
+
+        const titleText = e.target.closest('.title-text');
+        if (titleText) {
+            e.stopPropagation(); // Prevent other click handlers on the title div
+            const breadcrumb = JSON.parse(titleText.dataset.breadcrumb);
+            const searchQuery = breadcrumb.join(' ');
+            const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+            window.open(googleUrl, '_blank');
+        }
+
         state.selectedNodeId = id;
 
         if (e.target.closest('.content-toggle-btn')) {
             const node = findNodeById(state.nodes, id);
             if (node) node.contentVisible = !node.contentVisible;
-        }
-        else if (e.target.closest('.accordion-title')) {
+        } else if (e.target.closest('.accordion-title')) {
             if (state.openNodes.has(id)) {
                 state.openNodes.delete(id);
             } else {
@@ -383,6 +411,124 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         render();
     });
+
+    // --- DRAG AND DROP LOGIC ---
+    let draggedNodeId = null;
+
+    function clearDropIndicators() {
+        document.querySelectorAll('.drag-over, .drop-as-child').forEach(el => {
+            el.classList.remove('drag-over', 'drop-as-child');
+        });
+    }
+
+    accordionContainer.addEventListener('dragstart', (e) => {
+        const itemElement = e.target.closest('.accordion-item');
+        if (itemElement) {
+            draggedNodeId = parseInt(itemElement.dataset.id, 10);
+            e.dataTransfer.effectAllowed = 'move';
+            setTimeout(() => itemElement.classList.add('dragging'), 0);
+        }
+    });
+
+    accordionContainer.addEventListener('dragend', (e) => {
+        clearDropIndicators();
+        const draggedElement = document.querySelector('.dragging');
+        if (draggedElement) {
+            draggedElement.classList.remove('dragging');
+        }
+        draggedNodeId = null;
+    });
+
+    accordionContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const targetElement = e.target.closest('.accordion-item');
+        if (!targetElement || parseInt(targetElement.dataset.id, 10) === draggedNodeId) {
+            return;
+        }
+
+        clearDropIndicators();
+
+        const rect = targetElement.getBoundingClientRect();
+        const dropY = e.clientY - rect.top;
+        const height = rect.height;
+
+        // Thresholds for top/bottom drop zones (e.g., 25% of the height)
+        const threshold = height * 0.25;
+
+        if (dropY < threshold) {
+            targetElement.classList.add('drag-over'); // Drop before
+        } else if (dropY > height - threshold) {
+            targetElement.classList.add('drag-over'); // Drop after
+        } else {
+            targetElement.classList.add('drop-as-child'); // Drop onto
+        }
+    });
+
+    accordionContainer.addEventListener('dragleave', (e) => {
+        // Only remove if the mouse truly leaves the element, not just moving over children
+        if (e.target.closest('.accordion-item')) {
+             e.target.closest('.accordion-item').classList.remove('drag-over', 'drop-as-child');
+        }
+    });
+
+    accordionContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (draggedNodeId === null) return;
+
+        const dropTargetElement = e.target.closest('.accordion-item');
+        clearDropIndicators();
+
+        if (!dropTargetElement) return;
+
+        const targetNodeId = parseInt(dropTargetElement.dataset.id, 10);
+        if (draggedNodeId === targetNodeId) return;
+
+        const dragged = findNodeAndParent(state.nodes, draggedNodeId);
+        const target = findNodeAndParent(state.nodes, targetNodeId);
+
+        if (!dragged || !target) return;
+
+        // Prevent dropping a parent into its own child
+        let p = target.parent;
+        while (p) {
+            if (p.id === dragged.node.id) return;
+            const found = findNodeAndParent(state.nodes, p.id);
+            p = found ? found.parent : null;
+        }
+
+        // Remove node from its original location
+        const sourceList = dragged.parent ? dragged.parent.children : state.nodes;
+        const draggedNodeIndex = sourceList.findIndex(n => n.id === draggedNodeId);
+        sourceList.splice(draggedNodeIndex, 1);
+
+        // --- New Drop Logic ---
+        const rect = dropTargetElement.getBoundingClientRect();
+        const dropY = e.clientY - rect.top;
+        const height = rect.height;
+        const threshold = height * 0.25;
+
+        const targetList = target.parent ? target.parent.children : state.nodes;
+        const targetNodeIndex = targetList.findIndex(n => n.id === targetNodeId);
+
+        if (dropY < threshold) {
+            // Drop Before
+            targetList.splice(targetNodeIndex, 0, dragged.node);
+        } else if (dropY > height - threshold) {
+            // Drop After
+            targetList.splice(targetNodeIndex + 1, 0, dragged.node);
+        } else {
+            // Drop As Child
+            if (!target.node.children) {
+                target.node.children = [];
+            }
+            target.node.children.push(dragged.node);
+            state.openNodes.add(target.node.id); // Open the parent node
+        }
+
+        saveState();
+        render();
+    });
+
 
     // --- INITIALIZATION ---
     loadState();
