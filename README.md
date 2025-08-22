@@ -1,28 +1,60 @@
-# Hiërarchisch Accordeon Web App
+# Hierarchical Knowledge Base Builder & Viewer
 
-Dit is een geavanceerde webapplicatie voor het bouwen, beheren en opslaan van dynamische, hiërarchische accordeonstructuren. Uw werk wordt automatisch opgeslagen in uw browser.
+This project provides a suite of tools to build, manage, and view hierarchical knowledge structures. It is composed of two distinct web applications: the **Maker App** and the **Consumer App**.
 
-## Functies
+## Project Structure
 
--   **Node Beheer:**
-    -   Voeg root-level en geneste (kind) nodes toe.
-    -   Bewerk de titel van elke node.
-    -   Bewerk de paragraaf-inhoud van elke node.
-    -   Verwijder nodes (inclusief alle kinderen).
--   **Dubbele Zichtbaarheid-Toggle:**
-    -   **Accordeon Toggle (+/-):** Klap een node open of dicht om de kind-nodes te tonen of te verbergen. Dit kan met de `+/-` knop of door op de titel te klikken.
-    -   **Inhoud Toggle (>):** Toon of verberg de tekstparagraaf binnen een node, onafhankelijk van de accordeon-staat.
--   **Data Persistentie:**
-    -   Alle wijzigingen worden automatisch opgeslagen in de `localStorage` van uw browser. Uw structuur blijft bewaard, zelfs na het herladen van de pagina.
--   **Import & Export:**
-    -   **Export:** Download uw volledige accordeon-structuur als een `JSON`-bestand.
-    -   **Import:** Laad een eerder opgeslagen `JSON`-bestand om een structuur te herstellen of te delen.
+The project is organized into two main directories:
 
-## Hoe te gebruiken
+-   `/maker/`: Contains the **Maker App**, a full-featured application for creating, editing, and exporting knowledge hierarchies.
+-   `/consumer/`: Contains the **Consumer App**, a lightweight, read-only application for importing and browsing these hierarchies.
 
-1.  Open `index.html` in een webbrowser.
-2.  Gebruik de knoppen in de linker zijbalk om uw structuur te beheren:
-    -   **Voeg Hoofd Node Toe:** Maakt een nieuwe node op het hoogste niveau.
-    -   Selecteer een node door erop te klikken. De geselecteerde node krijgt een blauwe rand.
-    -   Gebruik de andere knoppen ('Voeg Kind Toe', 'Bewerk Titel', etc.) om de geselecteerde node aan te passen.
-    -   Gebruik de 'Export' en 'Import' knoppen om uw data te beheren.
+## Data Format
+
+The data is exchanged between the two applications using a simple `.txt` file format. The hierarchy is represented using tabs for indentation. Each line in the file represents a node.
+
+**Example:**
+```
+Main Topic
+	Sub-Topic 1
+		Detail A
+		Detail B
+	Sub-Topic 2
+```
+
+---
+
+## How to Use
+
+### Maker App (`/maker/index.html`)
+
+The Maker App is a powerful tool for building your knowledge base from scratch or by importing an existing `.txt` file.
+
+**Features:**
+
+*   **Create & Edit:**
+    *   Add nodes at the root level or as children of existing nodes.
+    *   Edit the title and content of any node.
+    *   Delete nodes (which also deletes all their children).
+*   **Drag-and-Drop:**
+    *   Easily reorganize your hierarchy by dragging and dropping nodes.
+    *   You can move a node to be a sibling of another (by dropping it near the top or bottom of the target) or make it a child (by dropping it in the middle of the target).
+*   **Google Search Integration:**
+    *   Click on any node's title to open a new browser tab with a Google search. The search query is automatically constructed from the full "breadcrumb path" of the node.
+*   **Import/Export:**
+    *   **Import TXT:** Load an existing `.txt` file (using the format described above) to populate the editor.
+    *   **Export TXT:** Save your current hierarchy to a `.txt` file, which can be shared or viewed with the Consumer App.
+*   **Persistence:** Your work is automatically saved in your browser's local storage, so you won't lose it if you refresh the page.
+
+### Consumer App (`/consumer/viewer.html`)
+
+The Consumer App provides a clean, read-only interface for browsing a knowledge base.
+
+**Features:**
+
+*   **Import & View:**
+    *   Select a `.txt` file to instantly render it as a collapsible accordion.
+*   **Easy Navigation:**
+    *   Expand and collapse nodes to navigate the hierarchy.
+*   **Google Search Integration:**
+    *   Just like in the Maker App, click any node's title to perform a contextual Google search in a new tab.
