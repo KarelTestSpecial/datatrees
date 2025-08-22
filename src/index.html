@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiërarchisch Accordeon</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app-container">
+        <div id="controls-container">
+            <div class="action-group-top">
+                <h2>Acties</h2>
+                <button id="add-root-node-btn">Voeg Hoofd Node Toe</button>
+                <hr>
+                <button id="add-child-btn" disabled>Voeg Kind Toe</button>
+                <button id="edit-title-btn" disabled>Bewerk Titel</button>
+                <button id="edit-content-btn" disabled>Bewerk Inhoud</button>
+                <button id="delete-node-btn" disabled>Verwijder Node</button>
+            </div>
+            <div class="action-group-bottom">
+                <hr>
+                <button id="export-btn">Export JSON</button>
+                <label for="import-file" class="button-label">Import JSON</label>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+                <label for="import-txt-file" class="button-label">Import TXT</label>
+                <input type="file" id="import-txt-file" accept=".txt" style="display: none;">
+            </div>
+        </div>
+
+        <div id="accordion-container">
+            <!-- Accordeon items worden hier dynamisch toegevoegd -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

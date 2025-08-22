@@ -1,0 +1,123 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#app-container {
+    display: flex;
+    height: 100vh;
+}
+
+#controls-container {
+    width: 250px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+}
+
+.action-group-bottom {
+    margin-top: auto;
+}
+
+#controls-container h2 {
+    margin-top: 0;
+}
+
+#controls-container button, .button-label {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: left;
+    cursor: pointer;
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    display: inline-block;
+    box-sizing: border-box;
+    font-size: 14px; /* Consistent font size */
+}
+
+#controls-container button:hover, .button-label:hover {
+    background-color: #dee2e6;
+}
+
+#controls-container button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+#accordion-container {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.accordion-item {
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+}
+
+.accordion-item.selected {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.accordion-title {
+    background-color: #f4f4f4;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Add some space between the items */
+}
+
+.title-text {
+    flex-grow: 1; /* Allow the title to take up remaining space */
+}
+
+.accordion-content {
+    padding: 10px; /* Keep padding for when it's visible */
+    border-top: 1px solid #eee;
+}
+
+.hidden {
+    display: none;
+}
+
+.accordion-toggle-btn {
+    font-size: 20px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.nested-accordion {
+    padding-left: 20px;
+}
+
+.content-area {
+    display: flex;
+    align-items: flex-start;
+    padding: 25px
+}
+
+.content-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    margin-right: 5px;
+    line-height: 1;
+    transition: transform 0.2s ease-in-out;
+}
+
+.content-toggle-btn.open {
+    transform: rotate(90deg);
+}
+
+.content-area p {
+    margin: 0;
+}
