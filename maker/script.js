@@ -194,6 +194,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function nodesToTxt(nodes, level = 0) {
+        let txt = '';
+        nodes.forEach(node => {
+            txt += '\t'.repeat(level) + node.title + '\n';
+            if (node.children && node.children.length > 0) {
+                txt += nodesToTxt(node.children, level + 1);
+            }
+        });
+        return txt;
+    }
+
+    function exportToTxt() {
+        if (state.nodes.length === 0) {
+            alert("Er is geen data om te exporteren.");
+            return;
+        }
+        const txtContent = nodesToTxt(state.nodes);
+        const blob = new Blob([txtContent], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'export.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
     // --- EVENT LISTENERS ---
     addRootNodeBtn.addEventListener('click', () => {
         const title = prompt("Voer de titel voor de nieuwe hoofd node in:", `Node ${state.nextId}`);
@@ -259,18 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    exportBtn.addEventListener('click', () => {
-        const stateString = JSON.stringify(state, null, 2); // Pretty print JSON
-        const blob = new Blob([stateString], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'accordion-data.json';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    });
+    exportBtn.addEventListener('click', exportToTxt);
 
     importFile.addEventListener('change', (event) => {
         const file = event.target.files[0];
